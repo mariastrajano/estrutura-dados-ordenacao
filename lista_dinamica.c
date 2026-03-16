@@ -3,6 +3,9 @@
 #include <string.h>
 #include "lista_dinamica.h"
 
+/* conta a comparacao e usa o criterio ativo */
+#define CMP(a, b) (g_comparacoes++, g_cmp((a), (b)))
+
 /* =================================================================
  *  Operacoes basicas
  * ================================================================= */
@@ -122,7 +125,7 @@ void bubbleSortLista(Lista *l) {
         trocou = 0;
         No *p = l->inicio;
         while (p->prox) {
-            if (p->vaga.salario > p->prox->vaga.salario) {
+            if (CMP(&p->vaga, &p->prox->vaga) > 0) {
                 trocar(&p->vaga, &p->prox->vaga);
                 trocou = 1;
             }
@@ -139,7 +142,7 @@ void selectionSortLista(Lista *l) {
     for (No *i = l->inicio; i; i = i->prox) {
         No *min = i;
         for (No *j = i->prox; j; j = j->prox)
-            if (j->vaga.salario < min->vaga.salario) min = j;
+            if (CMP(&j->vaga, &min->vaga) < 0) min = j;
         if (min != i) trocar(&i->vaga, &min->vaga);
     }
 }
@@ -158,7 +161,7 @@ void insertionSortLista(Lista *l) {
     for (int i = 1; i < n; i++) {
         Vaga chave = arr[i];
         int  j     = i - 1;
-        while (j >= 0 && arr[j].salario > chave.salario) {
+        while (j >= 0 && CMP(&arr[j], &chave) > 0) {
             arr[j + 1] = arr[j];
             j--;
         }
@@ -175,10 +178,10 @@ void insertionSortLista(Lista *l) {
 
 static void quickSortArr(Vaga *v, int ini, int fim) {
     if (ini >= fim) return;
-    float pivo = v[fim].salario;
+    Vaga  pivo = v[fim];
     int   i    = ini - 1;
     for (int j = ini; j < fim; j++) {
-        if (v[j].salario <= pivo) {
+        if (CMP(&v[j], &pivo) <= 0) {
             i++;
             trocar(&v[i], &v[j]);
         }
@@ -214,7 +217,7 @@ static void merge(Vaga *v, int ini, int meio, int fim) {
 
     int i = 0, j = 0, k = ini;
     while (i < n1 && j < n2)
-        v[k++] = (L[i].salario <= R[j].salario) ? L[i++] : R[j++];
+        v[k++] = (CMP(&L[i], &R[j]) <= 0) ? L[i++] : R[j++];
     while (i < n1) v[k++] = L[i++];
     while (j < n2) v[k++] = R[j++];
 

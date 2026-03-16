@@ -3,6 +3,9 @@
 #include <string.h>
 #include "lista_estatica.h"
 
+/* conta a comparacao e usa o criterio ativo */
+#define CMP(a, b) (g_comparacoes++, g_cmp((a), (b)))
+
 /* =================================================================
  *  Operacoes basicas
  * ================================================================= */
@@ -163,7 +166,7 @@ void bubbleSortListaEst(ListaEst *l) {
     do {
         trocou = 0;
         for (int i = 0; i < n - 1; i++) {
-            if (l->nos[idx[i]].vaga.salario > l->nos[idx[i+1]].vaga.salario) {
+            if (CMP(&l->nos[idx[i]].vaga, &l->nos[idx[i+1]].vaga) > 0) {
                 trocarEst(l, idx[i], idx[i+1]);
                 trocou = 1;
             }
@@ -184,7 +187,7 @@ void selectionSortListaEst(ListaEst *l) {
     for (int i = 0; i < n - 1; i++) {
         int min = i;
         for (int j = i + 1; j < n; j++)
-            if (l->nos[idx[j]].vaga.salario < l->nos[idx[min]].vaga.salario)
+            if (CMP(&l->nos[idx[j]].vaga, &l->nos[idx[min]].vaga) < 0)
                 min = j;
         if (min != i) trocarEst(l, idx[i], idx[min]);
     }
@@ -203,7 +206,7 @@ void insertionSortListaEst(ListaEst *l) {
     for (int i = 1; i < n; i++) {
         Vaga chave = arr[i];
         int  j     = i - 1;
-        while (j >= 0 && arr[j].salario > chave.salario) {
+        while (j >= 0 && CMP(&arr[j], &chave) > 0) {
             arr[j + 1] = arr[j];
             j--;
         }
@@ -221,10 +224,10 @@ static void trocarArr(Vaga *a, Vaga *b) { Vaga t = *a; *a = *b; *b = t; }
 
 static void quickArr(Vaga *v, int ini, int fim) {
     if (ini >= fim) return;
-    float pivo = v[fim].salario;
+    Vaga  pivo = v[fim];
     int i = ini - 1;
     for (int j = ini; j < fim; j++)
-        if (v[j].salario <= pivo) { i++; trocarArr(&v[i], &v[j]); }
+        if (CMP(&v[j], &pivo) <= 0) { i++; trocarArr(&v[i], &v[j]); }
     trocarArr(&v[i+1], &v[fim]);
     int p = i + 1;
     quickArr(v, ini, p - 1);
@@ -253,7 +256,7 @@ static void mergeArr(Vaga *v, int ini, int meio, int fim) {
     for (int j = 0; j < n2; j++) R[j] = v[meio + 1 + j];
     int i = 0, j = 0, k = ini;
     while (i < n1 && j < n2)
-        v[k++] = (L[i].salario <= R[j].salario) ? L[i++] : R[j++];
+        v[k++] = (CMP(&L[i], &R[j]) <= 0) ? L[i++] : R[j++];
     while (i < n1) v[k++] = L[i++];
     while (j < n2) v[k++] = R[j++];
     free(L); free(R);

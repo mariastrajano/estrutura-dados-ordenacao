@@ -131,26 +131,125 @@ def grafico_comparativo_n(df, n_alvo):
     print(f"  Salvo: {nome}")
 
 
+# ================================================================
+#  Graficos para resultados_listas.csv  (dinamica vs estatica)
+# ================================================================
+
+CSV_LISTAS = "resultados_listas.csv"
+
+def carregar_listas():
+    if not os.path.exists(CSV_LISTAS):
+        return None
+    df = pd.read_csv(CSV_LISTAS)
+    df.columns = [c.strip() for c in df.columns]
+    return df
+
+
+def grafico_din_vs_est(df):
+    """Para cada algoritmo: 3 subplots (tipos de entrada), linhas=estrutura."""
+    os.makedirs(OUT_DIR, exist_ok=True)
+    algoritmos = df["Algoritmo"].unique()
+    entradas   = ["Aleatorio", "Ordenado", "Invertido"]
+    cores_est  = {"Dinamica": "#e74c3c", "Estatica": "#3498db"}
+    estilos    = {"Dinamica": "o-",      "Estatica": "s--"}
+
+    for algo in algoritmos:
+        fig, axes = plt.subplots(1, 3, figsize=(15, 4), sharey=False)
+        fig.suptitle(f"{algo} — Dinamica vs Estatica por Tipo de Entrada",
+                     fontsize=12, fontweight="bold")
+
+        for ax, entrada in zip(axes, entradas):
+            sub = df[(df["Algoritmo"] == algo) & (df["TipoEntrada"] == entrada)]
+            for struct in ["Dinamica", "Estatica"]:
+                dados = sub[sub["Estrutura"] == struct].sort_values("N")
+                if dados.empty:
+                    continue
+                ax.plot(dados["N"], dados["TempoMedio_ms"],
+                        estilos[struct], color=cores_est[struct],
+                        label=struct, linewidth=2, markersize=6)
+            ax.set_title(entrada)
+            ax.set_xlabel("N")
+            ax.set_ylabel("Tempo medio (ms)" if entrada == "Aleatorio" else "")
+            ax.set_xscale("log")
+            ax.xaxis.set_major_formatter(ticker.ScalarFormatter())
+            ax.legend()
+            ax.grid(True, linestyle="--", alpha=0.5)
+
+        plt.tight_layout()
+        nome = f"{OUT_DIR}/din_vs_est_{algo.lower().replace(' ', '_')}.png"
+        plt.savefig(nome, dpi=150)
+        plt.close()
+        print(f"  Salvo: {nome}")
+
+
+def grafico_comparacoes(df):
+    """Barras agrupadas: numero de comparacoes por algoritmo e estrutura."""
+    os.makedirs(OUT_DIR, exist_ok=True)
+    cores_est = {"Dinamica": "#e74c3c", "Estatica": "#3498db"}
+
+    for n_alvo in sorted(df["N"].unique()):
+        sub   = df[(df["N"] == n_alvo) & (df["TipoEntrada"] == "Aleatorio")]
+        algos = ["Bubble Sort", "Selection Sort", "Insertion Sort",
+                 "Quick Sort", "Merge Sort"]
+        x     = range(len(algos))
+        width = 0.35
+
+        fig, ax = plt.subplots(figsize=(10, 5))
+        for i, struct in enumerate(["Dinamica", "Estatica"]):
+            tempos = []
+            for algo in algos:
+                row = sub[(sub["Algoritmo"] == algo) & (sub["Estrutura"] == struct)]
+                tempos.append(row["ComparacoesMedia"].values[0] if not row.empty else 0)
+            ax.bar([xi + i * width for xi in x], tempos, width,
+                   label=struct, color=cores_est[struct], alpha=0.85)
+
+        ax.set_title(f"Total de Comparacoes — N = {n_alvo} (Entrada Aleatoria)")
+        ax.set_xlabel("Algoritmo")
+        ax.set_ylabel("Numero de Comparacoes")
+        ax.set_xticks([xi + width / 2 for xi in x])
+        ax.set_xticklabels(algos, rotation=15, ha="right")
+        ax.legend()
+        ax.grid(axis="y", linestyle="--", alpha=0.5)
+        plt.tight_layout()
+        nome = f"{OUT_DIR}/comparacoes_n{n_alvo}.png"
+        plt.savefig(nome, dpi=150)
+        plt.close()
+        print(f"  Salvo: {nome}")
+
+
+# ================================================================
+#  Main
+# ================================================================
+
 def main():
     if not os.path.exists(CSV_FILE):
         print(f"Arquivo '{CSV_FILE}' nao encontrado.")
         print("Execute primeiro: gcc -O2 -o testes_ord.exe gerar_dados.c ordenacao.c testes_ordenacao.c && .\\testes_ord.exe")
-        return
+    else:
+        df = carregar()
+        print(f"Dados carregados (arrays): {len(df)} linhas\n")
 
-    df = carregar()
-    print(f"Dados carregados: {len(df)} linhas\n")
+        print("Gerando graficos por tipo de entrada...")
+        grafico_por_entrada(df)
 
-    print("Gerando graficos por tipo de entrada...")
-    grafico_por_entrada(df)
+        print("Gerando graficos por algoritmo...")
+        grafico_por_algoritmo(df)
 
-    print("Gerando graficos por algoritmo...")
-    grafico_por_algoritmo(df)
+        print("Gerando graficos comparativos em barra...")
+        for n in df["N"].unique():
+            grafico_comparativo_n(df, int(n))
 
-    print("Gerando graficos comparativos em barra...")
-    for n in df["N"].unique():
-        grafico_comparativo_n(df, int(n))
+    print("\nGerando graficos de listas (dinamica vs estatica)...")
+    df_listas = carregar_listas()
+    if df_listas is not None:
+        print(f"Dados carregados (listas): {len(df_listas)} linhas")
+        grafico_din_vs_est(df_listas)
+        grafico_comparacoes(df_listas)
+    else:
+        print(f"  '{CSV_LISTAS}' nao encontrado — execute testes.exe primeiro.")
 
-    print(f"\nPronto! {len(os.listdir(OUT_DIR))} graficos salvos em ./{OUT_DIR}/")
+    total = len(os.listdir(OUT_DIR)) if os.path.exists(OUT_DIR) else 0
+    print(f"\nPronto! {total} graficos salvos em ./{OUT_DIR}/")
 
 
 if __name__ == "__main__":
