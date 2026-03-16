@@ -41,7 +41,7 @@ static void popularDin(Lista *l, Vaga v[], int n) {
 }
 
 static void popularEst(ListaEst *l, Vaga v[], int n) {
-    inicializarListaEst(l);
+    inicializarListaEst(l, n);
     for (int i = 0; i < n; i++) inserirListaEst(l, v[i]);
 }
 
@@ -108,6 +108,7 @@ int main(void) {
             if (!est) { fprintf(stderr, "malloc falhou\n"); free(original); return 1; }
             popularEst(est, original, n);
             double tempoEst = medirEst(SORTS_EST[s], est);
+            destruirListaEst(est);
             free(est);
 
             printf("%-16s  %8.6f s  %8.6f s\n",

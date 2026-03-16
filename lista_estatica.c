@@ -7,14 +7,24 @@
  *  Operacoes basicas
  * ================================================================= */
 
-void inicializarListaEst(ListaEst *l) {
-    l->inicio   = -1;
-    l->tamanho  = 0;
+void inicializarListaEst(ListaEst *l, int capacidade) {
+    l->nos = (NoEst *)malloc(capacidade * sizeof(NoEst));
+    if (!l->nos) return;
+    l->capacidade = capacidade;
+    l->inicio     = -1;
+    l->tamanho    = 0;
     /* encadeia todos os slots como lista de nos livres */
-    for (int i = 0; i < MAX_ESTATICA - 1; i++)
+    for (int i = 0; i < capacidade - 1; i++)
         l->nos[i].prox = i + 1;
-    l->nos[MAX_ESTATICA - 1].prox = -1;
+    l->nos[capacidade - 1].prox = -1;
     l->livre = 0;
+}
+
+void destruirListaEst(ListaEst *l) {
+    free(l->nos);
+    l->nos      = NULL;
+    l->tamanho  = 0;
+    l->capacidade = 0;
 }
 
 /* aloca um slot da lista de livres; retorna indice ou -1 se cheio */
@@ -26,7 +36,7 @@ static int alocarSlot(ListaEst *l) {
 }
 
 void inserirListaEst(ListaEst *l, Vaga v) {
-    if (l->tamanho >= MAX_ESTATICA) return;
+    if (l->tamanho >= l->capacidade) return;
     int idx = alocarSlot(l);
     if (idx == -1) return;
 
@@ -56,7 +66,14 @@ void imprimirListaEst(ListaEst *l) {
 }
 
 void copiarListaEst(ListaEst *destino, ListaEst *origem) {
-    memcpy(destino, origem, sizeof(ListaEst));
+    destino->nos = (NoEst *)malloc(origem->capacidade * sizeof(NoEst));
+    if (!destino->nos) return;
+    destino->capacidade = origem->capacidade;
+    destino->inicio     = origem->inicio;
+    destino->livre      = origem->livre;
+    destino->tamanho    = origem->tamanho;
+    for (int i = 0; i < origem->capacidade; i++)
+        destino->nos[i] = origem->nos[i];
 }
 
 /* =================================================================
