@@ -42,8 +42,18 @@ void selectionSort(Vaga v[], int n){
     }
 }
 
+/* coloca a mediana de v[inicio], v[meio], v[fim] em v[fim] (pivo Lomuto) */
+static void mediana3(Vaga v[], int inicio, int fim) {
+    int meio = inicio + (fim - inicio) / 2;
+    if (v[inicio].salario > v[meio].salario) trocar(&v[inicio], &v[meio]);
+    if (v[inicio].salario > v[fim].salario)  trocar(&v[inicio], &v[fim]);
+    if (v[meio].salario   > v[fim].salario)  trocar(&v[meio],   &v[fim]);
+    trocar(&v[meio], &v[fim]); /* mediana -> fim */
+}
+
 int particionar(Vaga v[], int inicio, int fim){
 
+    mediana3(v, inicio, fim);
     float pivo = v[fim].salario;
     int i = inicio-1;
 

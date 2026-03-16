@@ -222,8 +222,18 @@ void insertionSortListaEst(ListaEst *l) {
 
 static void trocarArr(Vaga *a, Vaga *b) { Vaga t = *a; *a = *b; *b = t; }
 
+/* coloca a mediana de v[ini], v[meio], v[fim] em v[fim] (pivo Lomuto) */
+static void mediana3(Vaga *v, int ini, int fim) {
+    int meio = ini + (fim - ini) / 2;
+    if (CMP(&v[ini], &v[meio]) > 0) trocarArr(&v[ini], &v[meio]);
+    if (CMP(&v[ini], &v[fim])  > 0) trocarArr(&v[ini], &v[fim]);
+    if (CMP(&v[meio], &v[fim]) > 0) trocarArr(&v[meio], &v[fim]);
+    trocarArr(&v[meio], &v[fim]); /* mediana -> fim */
+}
+
 static void quickArr(Vaga *v, int ini, int fim) {
     if (ini >= fim) return;
+    mediana3(v, ini, fim);
     Vaga  pivo = v[fim];
     int i = ini - 1;
     for (int j = ini; j < fim; j++)
