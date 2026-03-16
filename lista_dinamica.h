@@ -26,6 +26,8 @@ void inserirLista     (Lista *l, Vaga v);
 void imprimirLista    (Lista *l);
 void liberarLista     (Lista *l);
 void copiarLista      (Lista *destino, Lista *origem);
+Vaga *buscarLista     (Lista *l, const char *empresa);  /* NULL se nao encontrado */
+int   removerLista    (Lista *l, const char *empresa);  /* 1 se removido, 0 se nao encontrado */
 
 /* -----------------------------------------------------------------
  *  Algoritmos de ordenacao (ordenam por salario crescente)

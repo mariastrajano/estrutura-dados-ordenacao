@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "lista_dinamica.h"
 
 /* =================================================================
@@ -57,6 +58,32 @@ void copiarLista(Lista *destino, Lista *origem) {
         inserirLista(destino, cur->vaga);
         cur = cur->prox;
     }
+}
+
+Vaga *buscarLista(Lista *l, const char *empresa) {
+    No *cur = l->inicio;
+    while (cur) {
+        if (strcmp(cur->vaga.empresa, empresa) == 0)
+            return &cur->vaga;
+        cur = cur->prox;
+    }
+    return NULL;
+}
+
+int removerLista(Lista *l, const char *empresa) {
+    No *ant = NULL, *cur = l->inicio;
+    while (cur) {
+        if (strcmp(cur->vaga.empresa, empresa) == 0) {
+            if (ant) ant->prox = cur->prox;
+            else     l->inicio = cur->prox;
+            free(cur);
+            l->tamanho--;
+            return 1;
+        }
+        ant = cur;
+        cur = cur->prox;
+    }
+    return 0;
 }
 
 /* =================================================================

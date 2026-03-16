@@ -76,6 +76,38 @@ void copiarListaEst(ListaEst *destino, ListaEst *origem) {
         destino->nos[i] = origem->nos[i];
 }
 
+Vaga *buscarListaEst(ListaEst *l, const char *empresa) {
+    int cur = l->inicio;
+    while (cur != -1) {
+        if (strcmp(l->nos[cur].vaga.empresa, empresa) == 0)
+            return &l->nos[cur].vaga;
+        cur = l->nos[cur].prox;
+    }
+    return NULL;
+}
+
+/* devolve o slot para a lista de livres */
+static void liberarSlot(ListaEst *l, int idx) {
+    l->nos[idx].prox = l->livre;
+    l->livre         = idx;
+}
+
+int removerListaEst(ListaEst *l, const char *empresa) {
+    int ant = -1, cur = l->inicio;
+    while (cur != -1) {
+        if (strcmp(l->nos[cur].vaga.empresa, empresa) == 0) {
+            if (ant == -1) l->inicio          = l->nos[cur].prox;
+            else           l->nos[ant].prox   = l->nos[cur].prox;
+            liberarSlot(l, cur);
+            l->tamanho--;
+            return 1;
+        }
+        ant = cur;
+        cur = l->nos[cur].prox;
+    }
+    return 0;
+}
+
 /* =================================================================
  *  Auxiliares internos
  * ================================================================= */
